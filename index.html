@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Benny Unlimited PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+:root{--n1:#00f5ff;--n2:#ff00ea;--txt:#fff;--bg:#050020}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Orbitron',sans-serif;color:var(--txt);background:var(--bg);overflow-x:hidden}
+video.bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;filter:brightness(.35) saturate(1.3);}
+.overlay{position:fixed;inset:0;background:radial-gradient(circle at top,transparent,#000);z-index:-1}
+header{text-align:center;padding:20px}
+h1{font-size:36px;background:linear-gradient(90deg,var(--n1),var(--n2));-webkit-background-clip:text;color:transparent;text-shadow:0 0 18px rgba(0,245,255,.6);}
+.section{max-width:1100px;margin:14px auto;padding:18px;background:rgba(0,0,0,.7);border-radius:18px;border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);}
+.section h2{color:#7df9ff;margin:0 0 10px;}
+input,textarea,button{width:100%;padding:12px;border-radius:12px;border:none;font-family:inherit;margin-top:8px}
+button{background:linear-gradient(135deg,var(--n1),var(--n2));color:#001018;font-weight:800;cursor:pointer;transition:.25s}
+button.alt{background:#020617;color:#cbd5f5;border:1px solid #1e293b}
+button:hover{transform:scale(1.04)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+#coins{position:fixed;top:12px;right:12px;background:#000;padding:10px 16px;border-radius:999px;border:1px solid var(--n1)}
+canvas{width:100%;height:260px;background:#000;border-radius:12px;border:1px solid #333}
+img.ai{width:100%;border-radius:12px;margin-top:10px}
+footer{text-align:center;opacity:.6;font-size:12px;margin:18px}
+.locked{opacity:.5}
+</style>
+</head>
+<body>
+
+<video class="bg" autoplay loop muted>
+<source src="https://cdn.pixabay.com/video/2023/04/01/157897-814977457_large.mp4" type="video/mp4">
+</video>
+<div class="overlay"></div>
+
+<div id="coins">🪙 <b id="coinVal">50</b></div>
+
+<header>
+<h1>Benny Unlimited PRO</h1>
+<p>Developer: Benny Artady</p>
+<div class="grid">
+<span class="badge">Gratis</span>
+<span class="badge">Premium</span>
+<span class="badge">Developer</span>
+</div>
+</header>
+
+<!-- DOWNLOAD MEDIA -->
+<div class="section">
+<h2>⬇️ Download Foto / Video / Audio</h2>
+<input id="dlLink" placeholder="Tempel link sosmed">
+<button onclick="downloadMedia()">Download</button>
+<p id="dlStatus"></p>
+</div>
+
+<!-- AI CHAT -->
+<div class="section">
+<h2>🤖 AI Chat</h2>
+<textarea id="chatIn" placeholder="Tanya apa saja..."></textarea>
+<button onclick="aiChat()">Kirim</button>
+<p id="chatOut"></p>
+</div>
+
+<!-- AI IMAGE -->
+<div class="section">
+<h2>🎨 AI Image Generator (Premium)</h2>
+<input id="imgPrompt" placeholder="Anime epic warrior">
+<button onclick="generateAIImage()">Buat Gambar AI</button>
+<img id="imgOut" class="ai">
+<p id="imgScore"></p>
+<p class="locked">🔒 Premium only</p>
+</div>
+
+<!-- DRAW / PAINT -->
+<div class="section">
+<h2>✏️ Menggambar & Melukis (Gratis)</h2>
+<canvas id="draw"></canvas>
+<button onclick="rateArt()">Nilai Gambar (+1-25 koin)</button>
+<p id="rateOut"></p>
+</div>
+
+<!-- EDITOR VIDEO / FOTO -->
+<div class="section">
+<h2>🎬 Editor Video & Foto</h2>
+<div class="grid">
+<button onclick="useFilter(false)">Filter Gratis</button>
+<button onclick="useFilter(true)">Filter Premium</button>
+<button onclick="requirePremium()">Timeline Editor</button>
+<button onclick="requirePremium()">Beat Sync / Cinematic</button>
+</div>
+<p id="editInfo"></p>
+</div>
+
+<!-- FILTER -->
+<div class="section">
+<h2>🎚️ Buat Filter Sendiri</h2>
+<input type="range" min="0" max="200">
+<button onclick="requirePremium()">Simpan Filter</button>
+<p class="locked">🔒 Premium only</p>
+</div>
+
+<!-- PREMIUM / REDEEM -->
+<div class="section">
+<h2>💎 Premium & Developer</h2>
+<div class="grid">
+<button onclick="buyCoin()">Premium 1 Hari (500 Koin)</button>
+<button onclick="buyDana()">Premium 2 Minggu (Dana)</button>
+<button onclick="redeemDev()">Kode Developer</button>
+</div>
+<p id="status"></p>
+</div>
+
+<footer>© Benny Artady • Benny Unlimited PRO</footer>
+
+<script>
+// Status user
+let coins=50, premium=false, developer=false;
+const coinEl=document.getElementById('coinVal');
+const statusEl=document.getElementById('status');
+
+// COINS UPDATE
+function updateCoins(v){coins+=v;if(coins<0) coins=0;coinEl.textContent=coins;}
+
+// DOWNLOAD
+function downloadMedia(){
+const url=document.getElementById('dlLink').value.trim();
+if(!url) return alert("Masukkan link");
+if(premium||developer){
+document.getElementById('dlStatus').textContent="Download premium dimulai...";
+}else{
+document.getElementById('dlStatus').textContent="Download gratis dimulai...";
+}
+}
+
+// AI CHAT
+function aiChat(){
+const q=document.getElementById('chatIn').value;
+if(!q) return;
+document.getElementById('chatOut').textContent=
+(premium||developer)?"AI Premium: "+q:"AI Gratis: "+q;
+}
+
+// AI IMAGE
+function generateAIImage(){
+if(!(premium||developer)){
+alert("Hanya premium");
+return;
+}
+const prompt=document.getElementById('imgPrompt').value||"Anime warrior";
+document.getElementById('imgOut').src="https://picsum.photos/600/400?random="+Math.floor(Math.random()*1000);
+document.getElementById('imgScore').textContent="Gambar berhasil dibuat!";
+}
+
+// DRAWING
+const c=document.getElementById('draw');
+const ctx=c.getContext('2d');
+let d=false;
+c.onmousedown=()=>d=true;
+c.onmouseup=()=>d=false;
+c.onmousemove=e=>{
+if(!d)return;
+ctx.fillStyle='#00f5ff';
+ctx.beginPath();
+ctx.arc(e.offsetX,e.offsetY,4,0,Math.PI*2);ctx.fill();
+}
+function rateArt(){
+const s=Math.floor(Math.random()*25)+1;
+updateCoins(s);
+document.getElementById('rateOut').textContent="AI menilai: +"+s+" koin";
+}
+
+// EDITOR FILTER
+function useFilter(isPremium){
+if(isPremium && !(premium||developer)){
+document.getElementById('editInfo').textContent="Filter premium terkunci 🔒";
+}else{
+document.getElementById('editInfo').textContent=isPremium?"Filter premium aktif":"Filter gratis aktif";
+}
+}
+
+// PREMIUM & DEVELOPER
+function buyCoin(){
+if(coins<500){alert("Koin tidak cukup");return;}
+updateCoins(-500);premium=true;
+statusEl.textContent="Premium aktif 1 Hari (Koin)";
+}
+function buyDana(){premium=true;statusEl.textContent="Premium aktif 2 Minggu. Dana: 085126505428";}
+function redeemDev(){
+const c=prompt("Masukkan kode developer:");
+if(c==="Benny Artady Devoloper"){developer=true;premium=true;statusEl.textContent="DEVELOPER PERMANEN AKTIF 👑";}
+else alert("Kode salah");
+}
+const today=new Date().getDate();
+if(today===1){updateCoins(250);alert("🎉 Bonus tanggal istimewa +250 koin!");}
+</script>
+</body>
+</html>
